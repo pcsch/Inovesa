@@ -6,6 +6,9 @@ project(inovesa)
 # Enable interrupts (Ctrl+C)
 add_definitions(-DINOVESA_ENABLE_INTERRUPT)
 
+set( BOOST_ROOT "/home/patrick/Downloads/boost_1_67_0/build" )
+set( BOOST_INCLUDE_DIRS "/home/patrick/Downloads/boost_1_67_0/build/include")
+set( BOOST_LIBRARYDIR "/home/patrick/Downloads/boost_1_67_0/build/libs" )
 
 # (default) options for Debug and Release builds
 if((DEFINED CMAKE_BUILD_TYPE) AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
@@ -70,6 +73,9 @@ set(SRC_LIST
   ./src/Z/ResistiveWall.cpp
   ./src/MessageStrings.cpp
   ./src/main.cpp
+  ./src/IPC/ipc.cpp
+  ./src/Communicators/socketcommunicator.cpp
+  ./src/Communicators/filecommunicator.cpp
 )
 
 set(INC_LIST
@@ -109,6 +115,11 @@ set(INC_LIST
   ./inc/MessageStrings.hpp
   ./inc/defines.hpp
   ./inc/fixed_point.h
+  ./inc/IPC/ipc.h
+  ./inc/IPC/defines.h
+  ./inc/Communicators/basecommunicator.h
+  ./inc/Communicators/socketcommunicator.h
+  ./inc/Communicators/filecommunicator.h
 )
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${INC_LIST} ${MISC_LIST})

@@ -62,6 +62,8 @@ using namespace vfps;
 
 #ifdef INOVESA_ENABLE_INTERRUPT
 #include<csignal> // for SIGINT handling
+#include <Communicators/socketcommunicator.h>
+#include <IPC/ipc.h>
 
 void SIGINT_handler(int) {
     Display::abort = true;
@@ -77,6 +79,24 @@ int main(int argc, char** argv)
      * with a sligtly shifted starting time value.
      */
     Display::start_time = std::chrono::system_clock::now();
+
+    /*
+     * Initialise IPC
+     */
+    boost::asio::io_context io;
+    IPCC::SocketCommunicator scomm(io);
+    IPCC::IPC ipc = IPCC::IPC(scomm);
+//    while(!ipc.connect()) {
+//        sleep(1);
+//        std::cout << "Retry" << std::endl;
+//    }
+    ipc.connect();
+    if(!ipc.init_transfer_variables()) {
+        std::cerr << "Fail!" << std::endl;
+        return 1;
+    }
+    std::vector<csrpower_t> csr_int;
+    ipc.set_variables(csr_int);
 
     /*
      * Program options might be such that the program does not have
@@ -865,7 +885,7 @@ int main(int argc, char** argv)
      * (everything inside this loop will be run a multitude of times)
      */
     uint32_t outstepnr=0;
-
+    unsigned int ipc_outstep=0;
     /*
      * Will count steps in the main simulation loop,
      * but can be used by time dependent variables.
@@ -900,6 +920,7 @@ int main(int argc, char** argv)
                 }
             }
             #endif // INOVESA_USE_OPENCL
+            csr_int.push_back(rdtn_field.getCSRPower());
             #ifdef INOVESA_USE_HDF5
             if (hdf_file != nullptr) {
                 HDF5File::AppendType at =
@@ -967,6 +988,15 @@ int main(int argc, char** argv)
                 }
             }
             #endif // INOVESSA_USE_GUI
+            ipc_outstep ++;
+            if(ipc_outstep == 10) {
+                ipc_outstep = 0;
+                ipc.send_variables();
+                ipc.receive_parameters();
+                csr_int.clear();
+//                drfm->update_mod(ipc.rec_pars.front().front()[0], ipc.rec_pars.front().front()[1]);
+                drfm->update_mod(ipc.rec_pars);
+            }
             Display::printText(status_string(grid_t1,static_cast<float>(simulationstep)/steps,
                                rotations),false,updatetime);
         }

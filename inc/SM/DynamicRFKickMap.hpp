@@ -97,6 +97,8 @@ public:
      */
     std::vector<std::array<meshaxis_t,2>> getPastModulation();
 
+    void update_mod(std::map<int, std::vector<std::array<float,2>>> &rp);
+
 private:
     const meshaxis_t _phasenoise;
 
