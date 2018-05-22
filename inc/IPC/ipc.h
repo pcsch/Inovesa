@@ -7,88 +7,46 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <iostream>
-#include "defines.h"
 #include "Communicators/basecommunicator.h"
-
+#include "defines.hpp"
 
 namespace IPCC {
 
+    enum Variables {
+        CSRINTENSITY=0, BUNCHPROFILE=1, ENERGYPROFILE=2
+    };
 
     class IPC {
     public:
         IPC(BaseCommunicator& comm): comm(&comm) {
         };
         bool connect();
-        bool init_transfer_variables();
-        bool send_variables();
-        bool receive_parameters();
-        void set_variables(std::vector<csr_t>& csr_int) {
+        bool initTransferVariables();
+        bool sendVariables();
+        bool receiveParameters();
+        void setVariables(std::vector<vfps::csrpower_t> &csr_int, std::vector<vfps::projection_t> &bunch_profiles,
+                          std::vector<vfps::projection_t> &energy_profiles) {
             _csr_int = &csr_int;
+            _bunch_profiles = &bunch_profiles;
+            _energy_profiles = &energy_profiles;
         }
         BaseCommunicator* comm;
 
+        bool* getRequestedVariables() {
+            return requested_variables;
+        }
+
 //        std::vector<std::vector<std::array<float,2>>> rec_pars;
     std::map<int, std::vector<std::array<float, 2>>> rec_pars;
+    int instep = 0; // TODO: Write read function for ints and make this an int
     protected:
-        std::vector<csr_t>* _csr_int;
-        short requested_variables[15];
+        std::vector<vfps::csrpower_t>* _csr_int;
+        std::vector<vfps::projection_t>* _bunch_profiles;
+        std::vector<vfps::projection_t>* _energy_profiles;
+        bool requested_variables[15];
         bool connection_successful;
     };
-
-
-//    class SocketIPC: public IPC {
-//    public:
-//        bool connect() override;
-//        bool init_transfer_variables() override;
-//        bool send_variables() override;
-//        bool receive_parameters() override;
-//
-//        void send(boost::array<char, 10>);
-//    private:
-//
-//    };
 }
-
-
-
-//template <typename T> bool IPCC::SocketCommunicator::read(T& x) {
-//    std::cout << "hi" << std::endl;
-//    boost::system::error_code error_code;
-//    socket->read_some(boost::asio::buffer(x), error_code);
-//    if(error_code){
-//        error = error_code.message();
-//        return false;
-//    }
-//    return true;
-//}
-//template <typename T> bool IPCC::SocketCommunicator::read(const T & x, std::size_t size) {
-//    boost::system::error_code error_code;
-//    socket->read_some(boost::asio::buffer(x, size), error_code);
-//    if(error_code){
-//        error = error_code.message();
-//        return false;
-//    }
-//    return true;
-//}
-//template <typename T> bool IPCC::SocketCommunicator::write(T& x) {
-//    boost::system::error_code error_code;
-//    socket->write_some(boost::asio::buffer(x), error_code);
-//    if(error_code){
-//        error = error_code.message();
-//        return false;
-//    }
-//    return true;
-//}
-//template <typename T> bool IPCC::SocketCommunicator::write(T* x, std::size_t size) {
-//    boost::system::error_code error_code;
-//    socket->write_some(boost::asio::buffer(x, size), error_code);
-//    if(error_code){
-//        error = error_code.message();
-//        return false;
-//    }
-//    return true;
-//}
-
 
 
 #endif //ASIO_IPC_H

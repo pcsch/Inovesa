@@ -16,12 +16,12 @@ namespace IPCC {
     class SocketCommunicator : public BaseCommunicator {
     public:
         explicit SocketCommunicator(boost::asio::io_context &io_context) : io_context(&io_context) {
-            std::cout << "Waiting for Connection " << std::flush;
             acceptor = new tcp::acceptor(io_context, tcp::endpoint(tcp::v4(), 6513));
             socket = new tcp::socket(io_context);
         }
 
         bool init() override {
+            std::cout << "Waiting for Connection " << std::flush;
             acceptor->accept(*socket);
             return true;
         }
@@ -34,6 +34,8 @@ namespace IPCC {
 
         bool read(float &x, std::size_t size) override;
 
+        bool read(int &x, std::size_t size) override;
+
         bool read(char &x, std::size_t size) override;
 
         bool write(char *x, std::size_t size) override;
@@ -43,6 +45,8 @@ namespace IPCC {
         bool write(std::size_t *x, std::size_t size) override;
 
         bool read(float *x, std::size_t size) override;
+
+        bool read(int *x, std::size_t size) override;
 
         bool read(char *x, std::size_t size) override;
 

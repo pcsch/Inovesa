@@ -14,6 +14,17 @@ bool IPCC::SocketCommunicator::read(float& x, std::size_t size) {
     }
     return true;
 }
+
+bool IPCC::SocketCommunicator::read(int& x, std::size_t size) {
+    boost::system::error_code error_code;
+    socket->read_some(boost::asio::buffer(&x, size), error_code);
+    if(error_code){
+        error = error_code.message();
+        return false;
+    }
+    return true;
+}
+
 bool IPCC::SocketCommunicator::read(char& x, std::size_t size) {
     boost::system::error_code error_code;
     socket->read_some(boost::asio::buffer(&x, size), error_code);
@@ -32,6 +43,17 @@ bool IPCC::SocketCommunicator::read(float* x, std::size_t size) {
     }
     return true;
 }
+
+bool IPCC::SocketCommunicator::read(int* x, std::size_t size) {
+    boost::system::error_code error_code;
+    socket->read_some(boost::asio::buffer(x, size), error_code);
+    if(error_code){
+        error = error_code.message();
+        return false;
+    }
+    return true;
+}
+
 bool IPCC::SocketCommunicator::read(char* x, std::size_t size) {
     boost::system::error_code error_code;
     socket->read_some(boost::asio::buffer(x, size), error_code);
