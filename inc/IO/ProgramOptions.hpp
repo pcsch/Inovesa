@@ -96,6 +96,8 @@ public:
     inline auto getWakeFile() const
         { return _wakefile; }
 
+    inline auto getUseIPC() const
+        { return _use_ipc; }
 public:
     inline auto getGridSize() const
         { return meshsize; }
@@ -243,6 +245,8 @@ private: // program parameters
     bool _forcerun;
 
     std::string _wakefile;
+
+    bool _use_ipc;
 
 private: // simulation parameters
     uint32_t meshsize;

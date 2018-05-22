@@ -62,13 +62,17 @@ using namespace vfps;
 
 #ifdef INOVESA_ENABLE_INTERRUPT
 #include<csignal> // for SIGINT handling
-#include <Communicators/socketcommunicator.h>
-#include <IPC/ipc.h>
 
 void SIGINT_handler(int) {
     Display::abort = true;
 }
 #endif // INOVESA_ENABLE_INTERRUPT
+#ifdef INOVESA_USE_IPC
+#include <Communicators/socketcommunicator.h>
+#include <Communicators/filecommunicator.h>
+#include <IPC/ipc.h>
+#endif // INOVESA_USE_IPC
+
 
 int main(int argc, char** argv)
 {
@@ -80,23 +84,6 @@ int main(int argc, char** argv)
      */
     Display::start_time = std::chrono::system_clock::now();
 
-    /*
-     * Initialise IPC
-     */
-    boost::asio::io_context io;
-    IPCC::SocketCommunicator scomm(io);
-    IPCC::IPC ipc = IPCC::IPC(scomm);
-//    while(!ipc.connect()) {
-//        sleep(1);
-//        std::cout << "Retry" << std::endl;
-//    }
-    ipc.connect();
-    if(!ipc.init_transfer_variables()) {
-        std::cerr << "Fail!" << std::endl;
-        return 1;
-    }
-    std::vector<csrpower_t> csr_int;
-    ipc.set_variables(csr_int);
 
     /*
      * Program options might be such that the program does not have
@@ -112,6 +99,28 @@ int main(int argc, char** argv)
         std::cerr << "error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
+
+    /*
+     * Initialise IPC
+     */
+    #ifdef INOVESA_USE_IPC
+    std::vector<csrpower_t> csr_int;
+    std::vector<projection_t> bunch_profiles;
+    std::vector<projection_t> energy_profiles;
+    boost::asio::io_context io;
+    IPCC::SocketCommunicator scomm(io);
+    //    IPCC::FileCommunicator scomm("/tmp/some_files");
+    IPCC::IPC ipc = IPCC::IPC(scomm);
+    if(opts.getUseIPC()) {
+        ipc.connect();
+        if (!ipc.initTransferVariables()) {
+            std::cerr << "Fail!" << std::endl;
+            return 1;
+        }
+        // Set variables for the IPC
+        ipc.setVariables(csr_int, bunch_profiles, energy_profiles);
+    }
+    #endif // INOVESA_USE_IPC
 
     // see documentation of make_display(...)
     auto cldev = opts.getCLDevice();
@@ -196,6 +205,7 @@ int main(int argc, char** argv)
     const double qmin = qcenter - pqhalf;
     const double pmax = pcenter + pqhalf;
     const double pmin = pcenter - pqhalf;
+
 
     // relative energy spread
     const auto sE = opts.getEnergySpread();
@@ -885,7 +895,6 @@ int main(int argc, char** argv)
      * (everything inside this loop will be run a multitude of times)
      */
     uint32_t outstepnr=0;
-    unsigned int ipc_outstep=0;
     /*
      * Will count steps in the main simulation loop,
      * but can be used by time dependent variables.
@@ -920,7 +929,37 @@ int main(int argc, char** argv)
                 }
             }
             #endif // INOVESA_USE_OPENCL
-            csr_int.push_back(rdtn_field.getCSRPower());
+            #ifdef INOVESA_USE_IPC
+            if(opts.getUseIPC()) {
+                for (int i = 0;
+                     i < 15; i++) { // TODO: Is it correct without updating projection? hdf seems to be the same
+                    switch (i) {  // TODO: switch here or put it in function? (would have to pass the variables or set
+                        // pointers to the source objects at the beginning somewhere (like rdtn_field)
+                        case IPCC::Variables::CSRINTENSITY:
+                            if (ipc.getRequestedVariables()[i]) {
+                                csr_int.push_back(rdtn_field.getCSRPower());
+                            }
+                            break;
+                        case IPCC::Variables::BUNCHPROFILE:
+                            if (ipc.getRequestedVariables()[i]) {
+                                for (int k = 0; k < ps_size; k++) {
+                                    bunch_profiles.push_back(grid_t1->getProjection(0)[i]);
+                                }
+                            }
+                            break;
+                        case IPCC::Variables::ENERGYPROFILE:
+                            if (ipc.getRequestedVariables()[i]) {
+                                for (int k = 0; k < ps_size; k++) {
+                                    energy_profiles.push_back(grid_t1->getProjection(1)[i]);
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            #endif // INOVESA_USE_IPC
             #ifdef INOVESA_USE_HDF5
             if (hdf_file != nullptr) {
                 HDF5File::AppendType at =
@@ -988,17 +1027,30 @@ int main(int argc, char** argv)
                 }
             }
             #endif // INOVESSA_USE_GUI
-            ipc_outstep ++;
-            if(ipc_outstep == 10) {
-                ipc_outstep = 0;
-                ipc.send_variables();
-                ipc.receive_parameters();
-                csr_int.clear();
-//                drfm->update_mod(ipc.rec_pars.front().front()[0], ipc.rec_pars.front().front()[1]);
-                drfm->update_mod(ipc.rec_pars);
+            #ifdef INOVESA_USE_IPC
+            else if (opts.getUseIPC()) {
+                rdtn_field.updateCSR(fc);
             }
-            Display::printText(status_string(grid_t1,static_cast<float>(simulationstep)/steps,
-                               rotations),false,updatetime);
+            if(opts.getUseIPC()) {
+                if ((outstepnr-1)%ipc.instep == 0) {
+                    if(!ipc.sendVariables()) {
+                        Display::abort = true;
+                        continue;
+                    }
+                    if(!ipc.receiveParameters()) {
+                        Display::abort = true;
+                        continue;
+                    }
+                    csr_int.clear();
+                    bunch_profiles.clear();
+                    energy_profiles.clear();
+//                drfm->update_mod(ipc.rec_pars.front().front()[0], ipc.rec_pars.front().front()[1]);
+                    drfm->update_mod(ipc.rec_pars);
+                }
+                Display::printText(status_string(grid_t1, static_cast<float>(simulationstep) / steps,
+                                                 rotations), false, updatetime);
+            }
+            #endif // INOVESA_USE_IPC
         }
         wm->apply();
         wm->applyTo(trackme);

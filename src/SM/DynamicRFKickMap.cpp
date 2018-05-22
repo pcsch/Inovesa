@@ -108,7 +108,8 @@ vfps::DynamicRFKickMap::__calcModulation(uint32_t steps)
     }
     return rv;
 }
-//void vfps::DynamicRFKickMap::update_mod(float hm, float phase, float ampl) {
+
+#ifdef INOVESA_USE_IPC
 void vfps::DynamicRFKickMap::update_mod(std::map<int, std::vector<std::array<float, 2>>> &rp) {
     bool has_phase = false;
     bool has_ampl = false;
@@ -118,7 +119,6 @@ void vfps::DynamicRFKickMap::update_mod(std::map<int, std::vector<std::array<flo
     if(rp.find(2) != rp.end()) {
         has_ampl = true;
     }
-    std::cout << has_phase << has_ampl << std::endl;
     std::queue<std::array<meshaxis_t,2>> rv;
     size_t _max = _next_modulation.size();
     float phase=0, ampl=0;
@@ -146,23 +146,17 @@ void vfps::DynamicRFKickMap::update_mod(std::map<int, std::vector<std::array<flo
                     ampl = _next_modulation.front()[1];
                 } else {
                     ampl = rp[2][ampl_run][1]; // Read phase from parameter list rp
-                    std::cout << ampl << std::endl;
                 }
             }
         } else { // else use default one
             ampl = _next_modulation.front()[1];
         }
-//        std::cout << phase << " " << ampl << std::endl;
         rv.emplace(std::array<meshaxis_t, 2>{{phase, ampl}});
         _next_modulation.pop();
     }
-//    _max = _next_modulation.size(); // Need to copy the value
-//    for(int i=0; i<_max; i++) {
-//        rv.emplace(std::array<meshaxis_t,2>{{_next_modulation.front()[0], _next_modulation.front()[1]}});
-//        _next_modulation.pop();
-//    }
     _next_modulation.swap(rv);
 }
+#endif // INOVESA_USE_IPC
 
 void vfps::DynamicRFKickMap::_calcKick()
 {

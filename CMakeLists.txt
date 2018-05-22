@@ -5,6 +5,8 @@ project(inovesa)
 ## User configuration
 # Enable interrupts (Ctrl+C)
 add_definitions(-DINOVESA_ENABLE_INTERRUPT)
+# Enable IPC Usage
+add_definitions(-DINOVESA_USE_IPC)
 
 set( BOOST_ROOT "/home/patrick/Downloads/boost_1_67_0/build" )
 set( BOOST_INCLUDE_DIRS "/home/patrick/Downloads/boost_1_67_0/build/include")
@@ -116,8 +118,7 @@ set(INC_LIST
   ./inc/defines.hpp
   ./inc/fixed_point.h
   ./inc/IPC/ipc.h
-  ./inc/IPC/defines.h
-  ./inc/Communicators/basecommunicator.h
+        ./inc/Communicators/basecommunicator.h
   ./inc/Communicators/socketcommunicator.h
   ./inc/Communicators/filecommunicator.h
 )

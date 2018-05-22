@@ -153,6 +153,12 @@ vfps::ProgramOptions::ProgramOptions() :
         #else // not INOVESA_USE_OPENCL
             "(not active in this build)")
         #endif // INOVESA_USE_OPENCL
+            ("useipc", po::value<bool>(&_use_ipc)->default_value(false)->implicit_value(true),
+        #ifdef INOVESA_USE_IPC
+            "Use Inter Process Communication to attach to a controlling process")
+        #else
+            "(not active in this build)")
+        #endif // INOVESA_USE_IPC
         ("config,c", po::value<std::string>(&_configfile),
             "name of a file containing a configuration.")
         ("ForceOpenGLVersion", po::value<int>(&_glversion)->default_value(2),
