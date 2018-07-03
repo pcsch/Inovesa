@@ -588,6 +588,28 @@ int main(int argc, char** argv)
             Display::printText(sstream.str());
         }
         rfm = drfm;
+    } else if (opts.getUseIPC()) {
+        if (linearRF) {
+            Display::printText("Building dynamic, linear RFKickMap...");
+
+            drfm.reset(new DynamicRFKickMap( grid_t2, grid_t1,ps_size, ps_size
+                                           , angle, f_RF , laststep
+                                           , interpolationtype,interpol_clamp
+                                           , oclh
+                                           ));
+        } else {
+            Display::printText("Building dynamic, nonlinear RFKickMap...");
+
+            drfm.reset(new DynamicRFKickMap( grid_t2, grid_t1,ps_size, ps_size
+                                           , revolutionpart, V_eff, f_RF, V0, laststep
+                                           , interpolationtype,interpol_clamp
+                                           , oclh
+                                           ));
+        }
+
+        Display::printText("...with IPC enabled.");
+
+        rfm = drfm;
     } else {
         if (linearRF) {
             Display::printText("Building static, linear RFKickMap.");

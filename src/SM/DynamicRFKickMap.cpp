@@ -53,6 +53,28 @@ vfps::DynamicRFKickMap::DynamicRFKickMap(std::shared_ptr<PhaseSpace> in
   , _next_modulation(__calcModulation(steps))
 {
 }
+vfps::DynamicRFKickMap::DynamicRFKickMap(std::shared_ptr<PhaseSpace> in
+                                        , std::shared_ptr<PhaseSpace> out
+                                        , const meshindex_t xsize
+                                        , const meshindex_t ysize
+                                        , const meshaxis_t angle
+                                        , const double f_RF
+                                        , const uint32_t steps
+                                        , const InterpolationType it
+                                        , const bool interpol_clamp
+                                        , oclhptr_t oclh
+                                        )
+  : RFKickMap( in,out,xsize,ysize,angle,f_RF,it,interpol_clamp, oclh)
+  , _phasenoise(0)
+  , _amplnoise(0)
+  , _modampl(0)
+  , _modtimedelta(0)
+  , _prng(std::mt19937(std::random_device{}()))
+  , _dist(std::normal_distribution<meshaxis_t>(0, 1))
+  , _next_modulation(__calcModulation(steps))
+{
+}
+
 
 vfps::DynamicRFKickMap::DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
                                         , std::shared_ptr<PhaseSpace> out
@@ -82,6 +104,31 @@ vfps::DynamicRFKickMap::DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
   , _next_modulation(__calcModulation(steps))
 {
 }
+vfps::DynamicRFKickMap::DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
+                                        , std::shared_ptr<PhaseSpace> out
+                                        , const meshindex_t xsize
+                                        , const meshindex_t ysize
+                                        , const double revolutionpart
+                                        , const double V_RF
+                                        , const double f_RF
+                                        , const double V0
+                                        , const uint32_t steps
+                                        , const InterpolationType it
+                                        , const bool interpol_clamp
+                                        , oclhptr_t oclh
+                                        )
+  : RFKickMap( in,out,xsize,ysize
+             , revolutionpart,V_RF,f_RF,V0,it,interpol_clamp,oclh )
+  , _phasenoise(0)
+  , _amplnoise(0)
+  , _modampl(0)
+  , _modtimedelta(0)
+  , _prng(std::mt19937(std::random_device{}()))
+  , _dist(std::normal_distribution<meshaxis_t>(0, 1))
+  , _next_modulation(__calcModulation(steps))
+{
+}
+
 
 vfps::DynamicRFKickMap::~DynamicRFKickMap() noexcept
 #ifdef INOVESA_ENABLE_CLPROFILING

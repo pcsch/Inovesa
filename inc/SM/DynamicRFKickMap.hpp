@@ -60,6 +60,23 @@ public:
                     , oclhptr_t oclh
                     );
     /**
+     * @brief constructor for linear RF to use with IPC
+     *
+     * @param angle the RFKickMap rotation angle
+     * @param phasespread width of the additive instability in rad
+     */
+    DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
+                    , std::shared_ptr<PhaseSpace> out
+                    , const meshindex_t xsize
+                    , const meshindex_t ysize
+                    , const meshaxis_t angle
+                    , const double f_RF
+                    , const uint32_t steps
+                    , const InterpolationType it
+                    , const bool interpol_clamp
+                    , oclhptr_t oclh
+                    );
+    /**
      * @brief constructor for sinusoidal RF
      *
      * @param phasespread width of the additive instability in rad
@@ -81,6 +98,25 @@ public:
                     , const bool interpol_clamp
                     , oclhptr_t oclh
                     );
+    /**
+     * @brief constructor for sinusoidal RF to use with IPC
+     *
+     * @param phasespread width of the additive instability in rad
+     */
+    DynamicRFKickMap(std::shared_ptr<PhaseSpace> in
+                    , std::shared_ptr<PhaseSpace> out
+                    , const meshindex_t xsize
+                    , const meshindex_t ysize
+                    , const double revolutionpart
+                    , const double V_RF
+                    , const double f_RF
+                    , const double V0
+                    , const uint32_t steps
+                    , const InterpolationType it
+                    , const bool interpol_clamp
+                    , oclhptr_t oclh
+                    );
+
 
     ~DynamicRFKickMap() noexcept;
 
