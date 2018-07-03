@@ -1047,10 +1047,10 @@ int main(int argc, char** argv)
 //                drfm->update_mod(ipc.rec_pars.front().front()[0], ipc.rec_pars.front().front()[1]);
                     drfm->update_mod(ipc.rec_pars);
                 }
-                Display::printText(status_string(grid_t1, static_cast<float>(simulationstep) / steps,
-                                                 rotations), false, updatetime);
             }
             #endif // INOVESA_USE_IPC
+            Display::printText(status_string(grid_t1, static_cast<float>(simulationstep) / steps,
+                                         rotations), false, updatetime);
         }
         wm->apply();
         wm->applyTo(trackme);
