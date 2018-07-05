@@ -1,5 +1,8 @@
 #include "IPC/ipc.h"
 
+/**
+ * @brief Connect to the other side using the comm object
+ */
 bool IPCC::IPC::connect() {
     comm->init();
     connection_successful = false; // TODO: perform actual check
@@ -28,14 +31,21 @@ bool IPCC::IPC::connect() {
     std::cout << "Connection successful" << std::endl;
     return connection_successful;
 }
+
+/**
+ * @brief Initialise the variables to transfer to the other side
+ *
+ * This method reads the number of outsteps to skip between communications and also reads the
+ * variables that are requested and that will later be send to the other side.
+ */
 bool IPCC::IPC::initTransferVariables() {
     char buf[5];
     buf[4] = '\0';
-    if(!comm->read(buf, 4*sizeof(char))) {
+    if(!comm->read(buf, 4*sizeof(char))) { // Wait and read
         std::cerr << comm->error << std::endl;
         return false;
     }
-    if(strcmp(buf, "1000")!=0) {
+    if(strcmp(buf, "1000")!=0) { // 1000 signals that the other side is ready
         std::cerr << buf << std::endl;
         std::cerr << "Error in Init_transfer_varaibles()" << std::endl;
         return false;
@@ -44,16 +54,16 @@ bool IPCC::IPC::initTransferVariables() {
     buf[1] = '0';
     buf[2] = '0';
     buf[3] = '0';
-    if(!comm->write(buf, 4*sizeof(char))) { // TODO: Proper Error Handling
+    if(!comm->write(buf, 4*sizeof(char))) { // Write 1000 to signal preparedness to go further
         std::cerr << comm->error << std::endl;
         return false;
     }
-    if(!comm->read(instep, sizeof(instep))) {
+    if(!comm->read(instep, sizeof(instep))) { // Read the number of outsteps to skip between communications
         std::cerr << comm->error << std::endl;
         return false;
     }
     char varbuf[15];
-    if(!comm->read(varbuf, 15*sizeof(char))) { // TODO: Proper Error Handling
+    if(!comm->read(varbuf, 15*sizeof(char))) { // Read the variables that are requested by the other side
         std::cerr << comm->error << std::endl;
         return false;
     }
@@ -62,6 +72,13 @@ bool IPCC::IPC::initTransferVariables() {
     }
     return true; // TODO: error check
 }
+
+/**
+ * @brief Send the requested variables to the other side for processing
+ *
+ * This method iterates over the requested variables (Simulated values such as CSR Intensity or Bunch Profile etc)
+ * (retrieved by IPCC::IPC::initTransferVariables) and sends them over the communication interface to the other side.
+ */
 bool IPCC::IPC::sendVariables() {
     char next[] = "next"; // TODO: Better Separator
     float * ptr = nullptr;
@@ -119,6 +136,9 @@ bool IPCC::IPC::sendVariables() {
     return true;
 }
 
+/**
+ * @brief Receive parameters to modify
+ */
 bool IPCC::IPC::receiveParameters() {
     float buf[4096];
     if(!comm->read(buf, 4096*sizeof(float))) { // TODO: Proper Error Handling
