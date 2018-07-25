@@ -5,6 +5,7 @@ branches:
   - master
   - develop
   - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+  - test
 
 addons:
   apt:
@@ -43,5 +44,12 @@ script: # set correct compiler versions first
     - cmake . -DCMAKE_BUILD_TYPE=Release
     - cmake --build .
     - ./inovesa --version
-    - ./inovesa -T 0.1 -o test.h5
+    - ./inovesa -T 5 -o test.h5
+    - git clone https://github.com/Inovesa/Lisa.git
+    - cd Lisa
+    - pip3 install cython --user
+    - pip3 install . --user
+    - cd ..
+    - git clone https://github.com/pcsch/InoTest.git
+    - python3 -m unittest InoTest/test.py
 
