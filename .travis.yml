@@ -51,6 +51,6 @@ script: # set correct compiler versions first
     - git clone https://github.com/Inovesa/Lisa.git Lisadir
     - mv Lisadir/Lisa .
     - git clone https://github.com/pcsch/InoTest.git
-    - pip3.5 install h5py numpy matplotlib tqdm --user
+    - python3.5 -m pip install h5py numpy matplotlib tqdm --user
     - python3.5 -m unittest InoTest/test.py
 
