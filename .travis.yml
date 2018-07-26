@@ -48,12 +48,9 @@ script: # set correct compiler versions first
     - cmake --build .
     - ./inovesa --version
     - ./inovesa -T 5 -o test.h5
-    - pip3 --version
-    - git clone https://github.com/Inovesa/Lisa.git
-    - cd Lisa
-    - pip3 install cython --user
-    - pip3 install . --user
-    - cd ..
+    - git clone https://github.com/Inovesa/Lisa.git Lisadir
+    - mv Lisadir/Lisa .
     - git clone https://github.com/pcsch/InoTest.git
-    - python3 -m unittest InoTest/test.py
+    - pip3.5 install h5py numpy matplotlib tqdm --user
+    - python3.5 -m unittest InoTest/test.py
 
