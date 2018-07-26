@@ -34,6 +34,8 @@ addons:
       - libpng++-dev # optional
 #      - libxrandr-dev # optional
 #      - opencl-dev # optional
+      - python3
+      - python3-pip
 
 #compiler: # for "matrix builds" testing various configurations
 #  - clang
@@ -46,12 +48,12 @@ script: # set correct compiler versions first
     - cmake --build .
     - ./inovesa --version
     - ./inovesa -T 5 -o test.h5
-    - pip --version
+    - pip3 --version
     - git clone https://github.com/Inovesa/Lisa.git
     - cd Lisa
-    - pip install cython --user
-    - pip install . --user
+    - pip3 install cython --user
+    - pip3 install . --user
     - cd ..
     - git clone https://github.com/pcsch/InoTest.git
-    - python -m unittest InoTest/test.py
+    - python3 -m unittest InoTest/test.py
 
