@@ -35,6 +35,7 @@ addons:
 #      - libxrandr-dev # optional
 #      - opencl-dev # optional
       - python3.5
+      - python3.5-dev
       - python3-pip
 
 #compiler: # for "matrix builds" testing various configurations
@@ -47,10 +48,15 @@ script: # set correct compiler versions first
     - cmake . -DCMAKE_BUILD_TYPE=Release
     - cmake --build .
     - ./inovesa --version
-    - ./inovesa -T 5 -o test.h5
-    - git clone https://github.com/Inovesa/Lisa.git Lisadir
-    - mv Lisadir/Lisa .
+    - ./inovesa -T 5 -o test.h5 --gui 0
+    - git clone https://github.com/Inovesa/Lisa.git
+    - python3.5 -m pip install cython --user
+    - python3.5 -m pip install ./Lisa --user
+#    - mv Lisadir/Lisa .
     - git clone https://github.com/pcsch/InoTest.git
-    - python3.5 -m pip install h5py numpy matplotlib tqdm --user
+#    - python3.5 -m pip install numpy --user
+#    - python3.5 -m pip install matplotlib --user
+#    - python3.5 -m pip install h5py --user
+#    - python3.5 -m pip install tqdm --user
     - python3.5 -m unittest InoTest/test.py
 
