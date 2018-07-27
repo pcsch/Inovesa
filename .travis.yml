@@ -50,6 +50,8 @@ script: # set correct compiler versions first
     - ./inovesa --version
     - ./inovesa -T 5 -o test.h5 --gui 0
     - git clone https://github.com/Inovesa/Lisa.git
+    - python3.5 -m pip install --upgrade pip
+    - python3.5 -m pip install --upgrade setuptools
     - python3.5 -m pip install cython --user
     - python3.5 -m pip install numpy --user
     - python3.5 -m pip install ./Lisa --user
