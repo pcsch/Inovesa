@@ -49,6 +49,7 @@ script: # set correct compiler versions first
     - cmake --build .
     - ./inovesa --version
     - ./inovesa -T 5 -o test.h5 --gui 0
+    - export MPLBACKEND="agg"
     - git clone https://github.com/Inovesa/Lisa.git
     - python3.5 -m pip install --upgrade pip --user --ignore-installed
     - python3.5 -m pip install --upgrade setuptools --user --ignore-installed
