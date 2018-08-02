@@ -61,7 +61,6 @@ vfps::DynamicRFKickMap::DynamicRFKickMap(std::shared_ptr<PhaseSpace> in
                                         , const meshindex_t ysize
                                         , const meshaxis_t angle
                                         , const double f_RF
-                                        , const uint32_t steps
                                         , const InterpolationType it
                                         , const bool interpol_clamp
                                         , oclhptr_t oclh
@@ -116,7 +115,6 @@ vfps::DynamicRFKickMap::DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
                                         , const double V_RF
                                         , const double f_RF
                                         , const double V0
-                                        , const uint32_t steps
                                         , const InterpolationType it
                                         , const bool interpol_clamp
                                         , oclhptr_t oclh

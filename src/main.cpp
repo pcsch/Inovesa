@@ -596,15 +596,14 @@ int main(int argc, char** argv)
             Display::printText("Building dynamic, linear RFKickMap...");
 
             drfm.reset(new DynamicRFKickMap( grid_t2, grid_t1,ps_size, ps_size
-                                           , angle, f_RF , laststep
-                                           , interpolationtype,interpol_clamp
-                                           , oclh
+                                           , angle, f_RF ,interpolationtype
+                                           ,interpol_clamp, oclh
                                            ));
         } else {
             Display::printText("Building dynamic, nonlinear RFKickMap...");
 
             drfm.reset(new DynamicRFKickMap( grid_t2, grid_t1,ps_size, ps_size
-                                           , revolutionpart, V_eff, f_RF, V0, laststep
+                                           , revolutionpart, V_eff, f_RF, V0
                                            , interpolationtype,interpol_clamp
                                            , oclh
                                            ));
@@ -969,14 +968,14 @@ int main(int argc, char** argv)
                             break;
                         case IPCC::Variables::BUNCHPROFILE:
                             if (ipc.getRequestedVariables()[i]) {
-                                for (int k = 0; k < ps_size; k++) {
+                                for (unsigned int k = 0; k < ps_size; k++) {
                                     bunch_profiles.push_back(grid_t1->getProjection(0)[i]);
                                 }
                             }
                             break;
                         case IPCC::Variables::ENERGYPROFILE:
                             if (ipc.getRequestedVariables()[i]) {
-                                for (int k = 0; k < ps_size; k++) {
+                                for (unsigned int k = 0; k < ps_size; k++) {
                                     energy_profiles.push_back(grid_t1->getProjection(1)[i]);
                                 }
                             }
