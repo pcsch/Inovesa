@@ -53,6 +53,8 @@ vfps::DynamicRFKickMap::DynamicRFKickMap(std::shared_ptr<PhaseSpace> in
   , _next_modulation(__calcModulation(steps))
 {
 }
+
+#ifdef INOVESA_USE_IPC
 vfps::DynamicRFKickMap::DynamicRFKickMap(std::shared_ptr<PhaseSpace> in
                                         , std::shared_ptr<PhaseSpace> out
                                         , const meshindex_t xsize
@@ -71,9 +73,9 @@ vfps::DynamicRFKickMap::DynamicRFKickMap(std::shared_ptr<PhaseSpace> in
   , _modtimedelta(0)
   , _prng(std::mt19937(std::random_device{}()))
   , _dist(std::normal_distribution<meshaxis_t>(0, 1))
-  , _next_modulation(__calcModulation(steps))
 {
 }
+#endif
 
 
 vfps::DynamicRFKickMap::DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
@@ -104,6 +106,8 @@ vfps::DynamicRFKickMap::DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
   , _next_modulation(__calcModulation(steps))
 {
 }
+
+#ifdef INOVESA_USE_IPC
 vfps::DynamicRFKickMap::DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
                                         , std::shared_ptr<PhaseSpace> out
                                         , const meshindex_t xsize
@@ -125,9 +129,9 @@ vfps::DynamicRFKickMap::DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
   , _modtimedelta(0)
   , _prng(std::mt19937(std::random_device{}()))
   , _dist(std::normal_distribution<meshaxis_t>(0, 1))
-  , _next_modulation(__calcModulation(steps))
 {
 }
+#endif
 
 
 vfps::DynamicRFKickMap::~DynamicRFKickMap() noexcept

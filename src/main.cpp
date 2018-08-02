@@ -77,10 +77,10 @@ void SIGINT_handler(int) {
 int main(int argc, char** argv)
 {
     /*
-     * Starting time is initialize at the very first moment
+     * Starting time is initialized at the very first moment
      * to have correct timing information, e.g. in the log files.
      * This is a design decision: The program would run as well
-     * with a sligtly shifted starting time value.
+     * with a slightly shifted starting time value.
      */
     Display::start_time = std::chrono::system_clock::now();
 
@@ -104,9 +104,11 @@ int main(int argc, char** argv)
      * Initialise IPC
      */
     #ifdef INOVESA_USE_IPC
+    // Storage Vectors for data to be transmitted
     std::vector<csrpower_t> csr_int;
     std::vector<projection_t> bunch_profiles;
     std::vector<projection_t> energy_profiles;
+
     boost::asio::io_context io;
     IPCC::SocketCommunicator scomm(io);  // A communicator object that handles communication via sockets
     IPCC::IPC ipc = IPCC::IPC(scomm);  // The actual IPC object that handles all the top level communication
@@ -587,7 +589,9 @@ int main(int argc, char** argv)
             Display::printText(sstream.str());
         }
         rfm = drfm;
-    } else if (opts.getUseIPC()) {
+    }
+    #ifdef INOVESA_USE_IPC
+    else if (opts.getUseIPC()) {
         if (linearRF) {
             Display::printText("Building dynamic, linear RFKickMap...");
 
@@ -609,7 +613,9 @@ int main(int argc, char** argv)
         Display::printText("...with IPC enabled.");
 
         rfm = drfm;
-    } else {
+    }
+    #endif
+    else {
         if (linearRF) {
             Display::printText("Building static, linear RFKickMap.");
             rfm.reset(new RFKickMap( grid_t2,grid_t1,ps_size,ps_size

@@ -65,6 +65,7 @@ public:
      * @param angle the RFKickMap rotation angle
      * @param phasespread width of the additive instability in rad
      */
+    #ifdef INOVESA_USE_IPC
     DynamicRFKickMap( std::shared_ptr<PhaseSpace> in
                     , std::shared_ptr<PhaseSpace> out
                     , const meshindex_t xsize
@@ -76,6 +77,7 @@ public:
                     , const bool interpol_clamp
                     , oclhptr_t oclh
                     );
+    #endif
     /**
      * @brief constructor for sinusoidal RF
      *
@@ -103,6 +105,7 @@ public:
      *
      * @param phasespread width of the additive instability in rad
      */
+    #ifdef INOVESA_USE_IPC
     DynamicRFKickMap(std::shared_ptr<PhaseSpace> in
                     , std::shared_ptr<PhaseSpace> out
                     , const meshindex_t xsize
@@ -116,6 +119,7 @@ public:
                     , const bool interpol_clamp
                     , oclhptr_t oclh
                     );
+    #endif
 
 
     ~DynamicRFKickMap() noexcept;
