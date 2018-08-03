@@ -159,7 +159,7 @@ vfps::DynamicRFKickMap::__calcModulation(uint32_t steps)
 }
 
 #ifdef INOVESA_USE_IPC
-void vfps::DynamicRFKickMap::update_mod(std::map<int, std::vector<std::array<float, 2>>> &rp) {
+bool vfps::DynamicRFKickMap::update_mod(std::map<int, std::vector<std::array<float, 2>>> &rp, size_t steps) {
     bool has_phase = false;
     bool has_ampl = false;
     if(rp.find(1) != rp.end()) {
@@ -169,41 +169,31 @@ void vfps::DynamicRFKickMap::update_mod(std::map<int, std::vector<std::array<flo
         has_ampl = true;
     }
     std::queue<std::array<meshaxis_t,2>> rv;
-    size_t _max = _next_modulation.size();
-    float phase=0, ampl=0;
+    float phase=0, ampl=1;
     int phase_run = -1;
     int ampl_run = -1;
-    for (int i=0; i<_max; i++) {
+    for (int i=0; i<steps; i++) {
         if(has_phase) { // If phase in parameter list rp
             if(rp[1][phase_run][0] == i || phase_run==-1) { // If current index is the same as the limit for the current value
                 phase_run ++;
-                if(phase_run >= rp[1].size()) { // If the last value was reached use the default ones
-                    has_phase = false;
-                    phase = _next_modulation.front()[0];
-                } else {
-                    phase = rp[1][phase_run][1]; // Read phase from parameter list rp
+                if(phase_run >= rp[1].size()) { // If the last value was reached return false
+                    return false;
                 }
+                phase = rp[1][phase_run][1]; // Read phase from parameter list rp
             }
-        } else { // else use default one
-            phase = _next_modulation.front()[0];
         }
         if(has_ampl) { // If phase in parameter list rp
             if(rp[2][ampl_run][0] == i || ampl_run==-1) { // If current index is the same as the limit for the current value
                 ampl_run ++;
                 if(ampl_run >= rp[2].size()) { // If the last value was reached use the default ones
-                    has_ampl = false;
-                    ampl = _next_modulation.front()[1];
-                } else {
-                    ampl = rp[2][ampl_run][1]; // Read phase from parameter list rp
+                    return false;
                 }
+                ampl = rp[2][ampl_run][1]; // Read phase from parameter list rp
             }
-        } else { // else use default one
-            ampl = _next_modulation.front()[1];
         }
-        rv.emplace(std::array<meshaxis_t, 2>{{phase, ampl}});
-        _next_modulation.pop();
+        _next_modulation.emplace(std::array<meshaxis_t, 2>{{phase, ampl}});
     }
-    _next_modulation.swap(rv);
+    return true;
 }
 #endif // INOVESA_USE_IPC
 

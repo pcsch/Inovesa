@@ -1087,7 +1087,7 @@ int main(int argc, char** argv)
                     bunch_profiles.clear();
                     energy_profiles.clear();
 //                drfm->update_mod(ipc.rec_pars.front().front()[0], ipc.rec_pars.front().front()[1]);
-                    drfm->update_mod(ipc.rec_pars);
+                    drfm->update_mod(ipc.rec_pars, ipc.instep*steps);
                 }
             }
             #endif // INOVESA_USE_IPC

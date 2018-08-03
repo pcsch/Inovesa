@@ -136,7 +136,7 @@ public:
     std::vector<std::array<meshaxis_t,2>> getPastModulation();
 
     #ifdef INOVESA_USE_IPC
-    void update_mod(std::map<int, std::vector<std::array<float,2>>> &rp);
+    bool update_mod(std::map<int, std::vector<std::array<float,2>>> &rp, size_t steps);
     #endif // INOVESA_USE_IPC
 
 private:
