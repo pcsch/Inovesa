@@ -63,6 +63,9 @@ using namespace vfps;
 #ifdef INOVESA_ENABLE_INTERRUPT
 #include<csignal> // for SIGINT handling
 
+/**
+ * @brief Handler that gets called when Ctrl+C is pressed or Inovesa receives a SIGINT Signal
+ */
 void SIGINT_handler(int) {
     Display::abort = true;
 }
@@ -123,7 +126,7 @@ int main(int argc, char** argv)
     }
     #endif // INOVESA_USE_IPC
 
-    // see documentation of make_display(...)
+    // Checks if it makes sense to run at all (no display and no output)
     auto cldev = opts.getCLDevice();
     std::string ofname = opts.getOutFile();
 
@@ -141,6 +144,7 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
+    // Show available opencl devices and exit (if --cldev < 0)
     #ifdef INOVESA_USE_OPENCL
     if (cldev < 0) {
         OCLH::listCLDevices();
@@ -149,6 +153,7 @@ int main(int argc, char** argv)
     #endif // INOVESA_USE_OPENCL
 
 
+    // see documentation of make_display(...)
     std::unique_ptr<vfps::Display> display;
     #ifdef INOVESA_USE_OPENGL
     try {
@@ -197,11 +202,12 @@ int main(int argc, char** argv)
 
     const auto save_sourcemap = opts.getSaveSourceMap();
 
-    const meshindex_t ps_size = opts.getGridSize();
-    const double pqsize = opts.getPhaseSpaceSize();
+    const meshindex_t ps_size = opts.getGridSize(); // Phase Space size in grid points
+    const double pqsize = opts.getPhaseSpaceSize(); // Phase Space size in units of bunch length and energy spread
     const double qcenter = -opts.getPSShiftX()*pqsize/(ps_size-1);
     const double pcenter = -opts.getPSShiftY()*pqsize/(ps_size-1);
     const double pqhalf = pqsize/2;
+    // Edges of the Phase space (in units of bl and es?)
     const double qmax = qcenter + pqhalf;
     const double qmin = qcenter - pqhalf;
     const double pmax = pcenter + pqhalf;
@@ -227,6 +233,7 @@ int main(int argc, char** argv)
     // revolution frequency (in Hz)
     const auto f_rev = opts.getRevolutionFrequency();
 
+    // Bending Radius (in m?)
     const auto R_bend = use_set_bend
             ? opts.getBendingRadius()
             : physcons::c/(two_pi<double>()*f_rev);
@@ -242,6 +249,7 @@ int main(int argc, char** argv)
     const auto V0 = physcons::e*std::pow(lorentzgamma,4)
                   / (3* physcons::epsilon0*R_bend);
 
+    // Lost Energy?
     const auto W0 = V0*physcons::e;
 
     const double V_eff = std::sqrt(V_RF*V_RF-V0*V0);
@@ -266,6 +274,7 @@ int main(int argc, char** argv)
     const double bl = physcons::c*dE/harmonic_number/std::pow(f_rev,2.0)/V_eff*fs;
 
     const double Ib = opts.getBunchCurrent();
+    // Bunch Charge
     const double Qb = Ib/f_rev;
     const double Iz = opts.getStartDistZoom();
 
@@ -275,13 +284,16 @@ int main(int argc, char** argv)
     const auto outstep = opts.getOutSteps();
     const float rotations = opts.getNRotations();
 
+    // Damping Time? what is e? This is only used if the damping time parameter is lower than 0
     const auto calc_damp = E0*physcons::e/W0/f_rev;
 
     const auto set_damp = opts.getDampingTime();
 
     const auto t_damp = (set_damp < 0)? calc_damp : set_damp;
 
+    // Time between timesteps
     const double dt = 1.0/(fs*steps);
+    // The part of a revolution (in the iso-accelerator) per simulation step
     const double revolutionpart = f_rev*dt;
     const double t_sync = 1.0/fs;
 
@@ -290,9 +302,12 @@ int main(int argc, char** argv)
     const size_t nfreqs = opts.getRoundPadding() ?
                     Impedance::upper_power_of_two(ps_size*padding) :
                     ps_size*padding;
+
+    // Properties used for impedance calculations
     const auto s = opts.getWallConductivity();
     const auto xi = opts.getWallSusceptibility();
     const auto collimator_radius = opts.getCollimatorRadius();
+
     const auto impedance_file = opts.getImpedanceFile();
     const auto use_csr = opts.getUseCSR();
 
@@ -350,6 +365,7 @@ int main(int argc, char** argv)
                            * std::pow(dE*fs/f_rev,2)/V_eff/harmonic_number
                            * std::pow(bl/R_bend,1./3.);
 
+        // Bursting Threshold current?
         Ith = Inorm * (0.5+0.34*shield);
 
         S_csr = Ib/Inorm;
