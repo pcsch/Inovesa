@@ -112,7 +112,7 @@ int main(int argc, char** argv)
     std::vector<projection_t> bunch_profiles;
     std::vector<projection_t> energy_profiles;
 
-    boost::asio::io_context io;
+    boost::asio::io_service io;
     IPCC::SocketCommunicator scomm(io);  // A communicator object that handles communication via sockets
     IPCC::IPC ipc = IPCC::IPC(scomm);  // The actual IPC object that handles all the top level communication
     if(opts.getUseIPC()) {
@@ -973,8 +973,7 @@ int main(int argc, char** argv)
             #endif // INOVESA_USE_OPENCL
             #ifdef INOVESA_USE_IPC
             if(opts.getUseIPC()) {
-                for (int i = 0;
-                     i < 15; i++) { // TODO: Is it correct without updating projection? hdf seems to be the same
+                for (int i = 0; i < 15; i++) { // TODO: Is it correct without updating projection? hdf seems to be the same
                     switch (i) {  // TODO: switch here or put it in function? (would have to pass the variables or set
                         // pointers to the source objects at the beginning somewhere (like rdtn_field)
                         case IPCC::Variables::CSRINTENSITY:
@@ -1086,8 +1085,11 @@ int main(int argc, char** argv)
                     csr_int.clear();
                     bunch_profiles.clear();
                     energy_profiles.clear();
-//                drfm->update_mod(ipc.rec_pars.front().front()[0], ipc.rec_pars.front().front()[1]);
-                    drfm->update_mod(ipc.rec_pars, ipc.instep*steps);
+                    if(!drfm->update_mod(ipc.rec_pars, ipc.instep*steps)) {
+                        Display::abort = true;
+                        Display::printText("Error in applying updated modulation");
+                        continue;
+                    }
                 }
             }
             #endif // INOVESA_USE_IPC

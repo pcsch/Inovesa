@@ -15,7 +15,7 @@ namespace IPCC {
 
     class SocketCommunicator : public BaseCommunicator {
     public:
-        explicit SocketCommunicator(boost::asio::io_context &io_context) : io_context(&io_context) {
+        explicit SocketCommunicator(boost::asio::io_service &io_context) : io_context(&io_context) {
             acceptor = new tcp::acceptor(io_context, tcp::endpoint(tcp::v4(), 6513));
             socket = new tcp::socket(io_context);
         }
@@ -56,7 +56,7 @@ namespace IPCC {
         }
 
     private:
-        boost::asio::io_context *io_context;
+        boost::asio::io_service *io_context;
         tcp::acceptor *acceptor;
         tcp::socket *socket;
     };
