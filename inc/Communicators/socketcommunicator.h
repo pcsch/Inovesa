@@ -30,6 +30,8 @@ namespace IPCC {
 
         bool write(float &x, std::size_t size) override;
 
+        bool write(int &x, std::size_t size) override;
+
         bool write(std::size_t &x, std::size_t size) override;
 
         bool read(float &x, std::size_t size) override;
@@ -39,6 +41,8 @@ namespace IPCC {
         bool read(char &x, std::size_t size) override;
 
         bool write(char *x, std::size_t size) override;
+
+        bool write(int *x, std::size_t size) override;
 
         bool write(float *x, std::size_t size) override;
 

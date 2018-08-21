@@ -23,6 +23,7 @@ namespace IPCC {
         bool connect();
         bool initTransferVariables();
         bool sendVariables();
+        bool sendSteps(int steps);
         bool receiveParameters();
         void setVariables(std::vector<vfps::csrpower_t> &csr_int, std::vector<vfps::projection_t> &bunch_profiles,
                           std::vector<vfps::projection_t> &energy_profiles) {

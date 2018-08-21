@@ -118,7 +118,7 @@ int main(int argc, char** argv)
     if(opts.getUseIPC()) {
         ipc.connect();
         if (!ipc.initTransferVariables()) {
-            std::cerr << "Fail!" << std::endl;
+            Display::printText("IPC: Error in Transfering Variables!");
             return 1;
         }
         // Set variables for the IPC
@@ -932,6 +932,32 @@ int main(int argc, char** argv)
     }
     #endif // INOVESA_USE_OPENCL
 
+    #ifdef INOVESA_USE_IPC
+    // Tell the other side how much steps between two communications are
+    if (!ipc.sendSteps(steps*ipc.instep)) {
+        Display::abort = true;
+        Display::printText("IPC: Error sending Steps");
+    }
+
+    if(opts.getUseIPC()) {
+        if(!ipc.sendVariables()) {
+            Display::abort = true;
+            Display::printText("IPC: Error sending Variables");
+        }
+        if(!ipc.receiveParameters()) {
+            Display::abort = true;
+            Display::printText("IPC: Error receiving Parameters");
+        }
+        csr_int.clear();
+        bunch_profiles.clear();
+        energy_profiles.clear();
+        if(!drfm->update_mod(ipc.rec_pars, ipc.instep*steps)) {
+            Display::abort = true;
+            Display::printText("IPC: Error in applying updated modulation");
+        }
+    }
+    #endif // INOVESA_USE_IPC
+
     /*
      * main simulation loop
      * (everything inside this loop will be run a multitude of times)
@@ -1073,7 +1099,7 @@ int main(int argc, char** argv)
                 rdtn_field.updateCSR(fc);
             }
             if(opts.getUseIPC()) {
-                if ((outstepnr-1)%ipc.instep == 0) {
+                if ((outstepnr)%ipc.instep == 0) {  // was: outstepnr-1
                     if(!ipc.sendVariables()) {
                         Display::abort = true;
                         continue;
@@ -1087,7 +1113,7 @@ int main(int argc, char** argv)
                     energy_profiles.clear();
                     if(!drfm->update_mod(ipc.rec_pars, ipc.instep*steps)) {
                         Display::abort = true;
-                        Display::printText("Error in applying updated modulation");
+                        Display::printText("IPC: Error in applying updated modulation");
                         continue;
                     }
                 }

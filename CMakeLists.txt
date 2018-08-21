@@ -9,10 +9,6 @@ add_definitions(-DINOVESA_ENABLE_INTERRUPT)
 # Enable IPC Usage
 add_definitions(-DINOVESA_USE_IPC)
 
-#set( BOOST_ROOT "/home/patrick/Downloads/boost_1_67_0/build" )
-#set( BOOST_INCLUDE_DIRS "/home/patrick/Downloads/boost_1_67_0/build/include")
-#set( BOOST_LIBRARYDIR "/home/patrick/Downloads/boost_1_67_0/build/libs" )
-
 # (default) options for Debug and Release builds
 if((DEFINED CMAKE_BUILD_TYPE) AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
     add_definitions(-Wall -Wextra)

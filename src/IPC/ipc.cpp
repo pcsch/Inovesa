@@ -137,6 +137,18 @@ bool IPCC::IPC::sendVariables() {
 }
 
 /**
+ * @brief Send the number of simulation steps between consecutive communications
+ */
+bool IPCC::IPC::sendSteps(int steps) {
+    if(!comm->write(&steps, sizeof(steps))) { // TODO: Proper Error Handling
+        std::cerr << comm->error << std::endl;
+        return false;
+    }
+    return true;
+}
+
+
+/**
  * @brief Receive parameters to modify
  */
 bool IPCC::IPC::receiveParameters() {

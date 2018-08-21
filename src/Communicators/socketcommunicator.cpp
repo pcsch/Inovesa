@@ -72,6 +72,17 @@ bool IPCC::SocketCommunicator::write(float& x, std::size_t size) {
     }
     return true;
 }
+
+bool IPCC::SocketCommunicator::write(int & x, std::size_t size) {
+    boost::system::error_code error_code;
+    socket->write_some(boost::asio::buffer(&x, size), error_code);
+    if(error_code){
+        error = error_code.message();
+        return false;
+    }
+    return true;
+}
+
 bool IPCC::SocketCommunicator::write(char& x, std::size_t size) {
     boost::system::error_code error_code;
     socket->write_some(boost::asio::buffer(&x, size), error_code);
@@ -99,6 +110,17 @@ bool IPCC::SocketCommunicator::write(float* x, std::size_t size) {
     }
     return true;
 }
+
+bool IPCC::SocketCommunicator::write(int* x, std::size_t size) {
+    boost::system::error_code error_code;
+    socket->write_some(boost::asio::buffer(x, size), error_code);
+    if(error_code){
+        error = error_code.message();
+        return false;
+    }
+    return true;
+}
+
 bool IPCC::SocketCommunicator::write(char* x, std::size_t size) {
     boost::system::error_code error_code;
     socket->write_some(boost::asio::buffer(x, size), error_code);

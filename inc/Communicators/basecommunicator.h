@@ -17,6 +17,8 @@ namespace IPCC {
 
         virtual bool write(float &x, std::size_t size) = 0;
 
+        virtual bool write(int &x, std::size_t size) = 0;
+
         virtual bool write(std::size_t &x, std::size_t size) = 0;
 
         virtual bool read(float &x, std::size_t size) =0;
@@ -26,6 +28,8 @@ namespace IPCC {
         virtual bool read(char &x, std::size_t size) = 0;
 
         virtual bool write(char *x, std::size_t size) = 0;
+
+        virtual bool write(int *x, std::size_t size) = 0;
 
         virtual bool write(float *x, std::size_t size) = 0;
 
