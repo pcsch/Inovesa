@@ -944,7 +944,7 @@ int main(int argc, char** argv)
 
     #ifdef INOVESA_USE_IPC
     // Tell the other side how much steps between two communications are
-    if (!ipc.sendSteps(steps*ipc.instep)) {
+    if (!ipc.sendSteps(outstep*ipc.instep)) {
         Display::abort = true;
         Display::printText("IPC: Error sending Steps");
     }
@@ -961,7 +961,7 @@ int main(int argc, char** argv)
         csr_int.clear();
         bunch_profiles.clear();
         energy_profiles.clear();
-        if(!drfm->update_mod(ipc.rec_pars, ipc.instep*steps)) {
+        if(!drfm->update_mod(ipc.rec_pars, ipc.instep*outstep)) {
             Display::abort = true;
             Display::printText("IPC: Error in applying updated modulation");
         }
@@ -1108,7 +1108,7 @@ int main(int argc, char** argv)
                     csr_int.clear();
                     bunch_profiles.clear();
                     energy_profiles.clear();
-                    if(!drfm->update_mod(ipc.rec_pars, ipc.instep*steps)) {
+                    if(!drfm->update_mod(ipc.rec_pars, ipc.instep*outstep)) {
                         Display::abort = true;
                         Display::printText("IPC: Error in applying updated modulation");
                         continue;
