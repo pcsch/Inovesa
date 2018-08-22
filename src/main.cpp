@@ -87,6 +87,10 @@ int main(int argc, char** argv)
      */
     Display::start_time = std::chrono::system_clock::now();
 
+    #ifdef INOVESA_ENABLE_INTERRUPT
+    //Install signal handler for SIGINT
+    signal(SIGINT, SIGINT_handler);
+    #endif // INOVESA_ENABLE_INTERRUPT
 
     /*
      * Program options might be such that the program does not have
@@ -193,6 +197,12 @@ int main(int argc, char** argv)
     const auto derivationtype = static_cast<FokkerPlanckMap::DerivationType>
             (opts.getDerivationType());
 
+    const auto fptype = static_cast<FokkerPlanckMap::FPType>
+            (opts.getFPType());
+
+    const auto fptrack = static_cast<FokkerPlanckMap::FPTracking>
+            (opts.getFPTrack());
+
     const auto interpolationtype = static_cast<SourceMap::InterpolationType>
             (opts.getInterpolationPoints());
 
@@ -200,10 +210,8 @@ int main(int argc, char** argv)
     const bool verbose = opts.getVerbosity();
     const auto renormalize = opts.getRenormalizeCharge();
 
-    const auto save_sourcemap = opts.getSaveSourceMap();
-
-    const meshindex_t ps_size = opts.getGridSize(); // Phase Space size in grid points
-    const double pqsize = opts.getPhaseSpaceSize(); // Phase Space size in units of bunch length and energy spread
+    const meshindex_t ps_size = opts.getGridSize();
+    const double pqsize = opts.getPhaseSpaceSize();
     const double qcenter = -opts.getPSShiftX()*pqsize/(ps_size-1);
     const double pcenter = -opts.getPSShiftY()*pqsize/(ps_size-1);
     const double pqhalf = pqsize/2;
@@ -276,7 +284,7 @@ int main(int argc, char** argv)
     const double Ib = opts.getBunchCurrent();
     // Bunch Charge
     const double Qb = Ib/f_rev;
-    const double Iz = opts.getStartDistZoom();
+    const double zoom = opts.getStartDistZoom();
 
     const double steps = (opts.getStepsPerTrev()>0)
             ? opts.getStepsPerTrev()*f_rev/fs
@@ -452,9 +460,9 @@ int main(int argc, char** argv)
             Display::printText("Please give file for initial distribution "
                                "or size of target mesh > 0.");
         }
-        grid_t1.reset(new PhaseSpace( ps_size,qmin,qmax,pmin,pmax
-                                    , oclh
-                                    , Qb,Ib,bl,dE,Iz));
+        const auto nBunches = 1U;
+        grid_t1.reset(new PhaseSpace( ps_size,qmin,qmax,bl,pmin,pmax,dE
+                                    , oclh, Qb,Ib,nBunches,zoom));
     } else {
         Display::printText("Reading in initial distribution from: \""
                            +startdistfile+'\"');
@@ -510,7 +518,7 @@ int main(int argc, char** argv)
     meshdata_t maxval = std::numeric_limits<meshdata_t>::min();
     for (unsigned int x=0; x<ps_size; x++) {
         for (unsigned int y=0; y<ps_size; y++) {
-            maxval = std::max(maxval,(*grid_t1)[x][y]);
+            maxval = std::max(maxval,(*grid_t1)[0][x][y]);
         }
     }
 
@@ -688,12 +696,9 @@ int main(int argc, char** argv)
     // SourceMap for damping and diffusion
     SourceMap* fpm;
     if (e1 > 0) {
-        Display::printText("Building FokkerPlanckMap.");
-        fpm = new FokkerPlanckMap( grid_t3,grid_t1,ps_size,ps_size
-                                 , FokkerPlanckMap::FPType::full,e1
-                                 , derivationtype
-                                 , oclh
-                                 );
+        Display::printText("Building FokkerPlanckMap");
+        fpm = new FokkerPlanckMap( grid_t3,grid_t1,ps_size,ps_size,
+                                   fptype,fptrack,e1,derivationtype, oclh);
 
         sstream.str("");
         sstream << std::scientific << calc_damp << " s";
@@ -708,6 +713,7 @@ int main(int argc, char** argv)
         sstream << std::scientific << 1/t_damp/fs/(two_pi<double>());
         Display::printText("... damping beta: " +sstream.str());
     } else {
+        Display::printText("Fokker-Planck-Term is neglected.");
         fpm = new Identity(grid_t3,grid_t1,ps_size,ps_size, oclh);
     }
 
@@ -791,9 +797,9 @@ int main(int argc, char** argv)
        && opts.getParticleTracking() != "/dev/null" ) {
         try {
             std::ifstream trackingfile(opts.getParticleTracking());
-            meshaxis_t x,y;
-            while (trackingfile >> x >> y) {
-                trackme.push_back({x,y});
+            meshaxis_t q,p;
+            while (trackingfile >> q >> p) {
+                trackme.push_back({grid_t1->x(q),grid_t1->y(p)});
             }
         } catch (std::exception& e) {
             std::cerr << e.what();
@@ -866,14 +872,23 @@ int main(int argc, char** argv)
       || isOfFileType(".hdf5",ofname) ) {
         opts.save(ofname+".cfg");
         Display::printText("Saved configuiration to \""+ofname+".cfg\".");
-        hdf_file = new HDF5File(ofname,grid_t1, &rdtn_field, wake_impedance,
-                                wfm,trackme.size(), t_sync,f_rev);
-        Display::printText("Will save results to \""+ofname+"\".");
-        opts.save(hdf_file);
-        hdf_file->addParameterToGroup("/Info","CSRStrength",
-                                      H5::PredType::IEEE_F64LE,&S_csr);
-        hdf_file->addParameterToGroup("/Info","ShieldingParameter",
-                                      H5::PredType::IEEE_F64LE,&shield);
+        try {
+            hdf_file = new HDF5File(ofname,grid_t1, &rdtn_field, wake_impedance,
+                                    wfm,trackme.size(), t_sync,f_rev);
+            Display::printText("Will save results to \""+ofname+"\".");
+            opts.save(hdf_file);
+            hdf_file->addParameterToGroup("/Info","CSRStrength",
+                                          H5::PredType::IEEE_F64LE,&S_csr);
+            hdf_file->addParameterToGroup("/Info","ShieldingParameter",
+                                          H5::PredType::IEEE_F64LE,&shield);
+        } catch (H5::Exception& e) {
+           #if H5_VERS_MAJOR == 1 and H5_VERS_MINOR < 10
+           e.printError();
+           #else
+           e.printErrorStack();
+           #endif
+            Display::abort = true;
+        }
     } else
     #endif // INOVESA_USE_HDF5
     #ifdef INOVESA_USE_PNG
@@ -921,11 +936,6 @@ int main(int argc, char** argv)
     grid_t1->variance(1);
     Display::printText(status_string(grid_t1,0,rotations),false);
 
-    #ifdef INOVESA_ENABLE_INTERRUPT
-    //Install signal handler for SIGINT
-    signal(SIGINT, SIGINT_handler);
-    #endif // INOVESA_ENABLE_INTERRUPT
-
     #ifdef INOVESA_USE_OPENCL
     if (oclh) {
         oclh->finish();
@@ -963,6 +973,7 @@ int main(int argc, char** argv)
      * (everything inside this loop will be run a multitude of times)
      */
     uint32_t outstepnr=0;
+
     /*
      * Will count steps in the main simulation loop,
      * but can be used by time dependent variables.
@@ -985,7 +996,7 @@ int main(int argc, char** argv)
         if (outstep > 0 && simulationstep%outstep == 0) {
 
             // works on XProjection
-            grid_t1->getIntegral();
+            grid_t1->integrate();
             grid_t1->variance(0);
             grid_t1->updateYProjection();
             grid_t1->variance(1);
@@ -1042,24 +1053,10 @@ int main(int argc, char** argv)
                 if (wkm != nullptr) {
                     hdf_file->append(wkm);
                 }
-                hdf_file->appendTracks(trackme.data());
+                hdf_file->appendTracks(trackme);
 
                 if (drfm) {
                     hdf_file->appendRFKicks(drfm->getPastModulation());
-                }
-
-                if (save_sourcemap) {
-                    std::vector<PhaseSpace::Position> allpos;
-                    for (float x=0; x<ps_size; x++) {
-                        for (float y=0; y<ps_size; y++) {
-                            allpos.push_back({x,y});
-                        }
-                    }
-                    wm->applyTo(allpos);
-                    rfm->applyTo(allpos);
-                    drm->applyTo(allpos);
-                    fpm->applyTo(allpos);
-                    hdf_file->appendSourceMap(allpos.data());
                 }
             }
             outstepnr++;
@@ -1180,26 +1177,10 @@ int main(int argc, char** argv)
         if (wkm != nullptr) {
             hdf_file->append(wkm);
         }
-        hdf_file->appendTracks(trackme.data());
+        hdf_file->appendTracks(trackme);
 
         if (drfm) {
             hdf_file->appendRFKicks(drfm->getPastModulation());
-        }
-
-        if (save_sourcemap) {
-            std::vector<PhaseSpace::Position> allpos;
-            for (float x=0; x<ps_size; x++) {
-                for (float y=0; y<ps_size; y++) {
-                    allpos.push_back({x,y});
-                }
-            }
-            wm->applyTo(allpos);
-            rfm->applyTo(allpos);
-            if (drm != nullptr) {
-                drm->applyTo(allpos);
-            }
-            fpm->applyTo(allpos);
-            hdf_file->appendSourceMap(allpos.data());
         }
     }
     #endif // INOVESA_USE_HDF5
@@ -1215,7 +1196,7 @@ int main(int argc, char** argv)
             for (unsigned int y=0; y<ps_size; y++) {
                 png_file[ps_size-y-1][x]=
                         static_cast<png::gray_pixel_16>(
-                            std::max((*grid_t1)[x][y],meshdata_t(0))
+                            std::max((*grid_t1)[0][x][y],meshdata_t(0))
                             /maxval*float(UINT16_MAX));
             }
         }

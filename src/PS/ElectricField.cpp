@@ -318,7 +318,7 @@ vfps::csrpower_t* vfps::ElectricField::updateCSR(const frequency_t cutoff)
     } else
     #elif defined INOVESA_USE_OPENCL
     if (_oclh) {
-        _phasespace->syncCLMem(clCopyDirection::dev2cpu);
+        _phasespace->syncCLMem(OCLH::clCopyDirection::dev2cpu);
     }
     #endif // INOVESA_USE_CLTTT
     {
@@ -368,12 +368,12 @@ vfps::meshaxis_t *vfps::ElectricField::wakePotential()
                                           cl::NDRange(_nmax));
         _oclh->enqueueBarrier();
         #ifdef INOVESA_SYNC_CL
-        syncCLMem(clCopyDirection::dev2cpu);
+        syncCLMem(OCLH::clCopyDirection::dev2cpu);
         #endif // INOVESA_SYNC_CL
     } else
     #elif defined INOVESA_USE_OPENCL
     if (_oclh) {
-        _phasespace->syncCLMem(clCopyDirection::dev2cpu);
+        _phasespace->syncCLMem(OCLH::clCopyDirection::dev2cpu);
     }
     #endif // INOVESA_USE_OPENCL
     {
