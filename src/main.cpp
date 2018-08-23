@@ -117,7 +117,7 @@ int main(int argc, char** argv)
     std::vector<projection_t> energy_profiles;
 
     boost::asio::io_service io;
-    IPCC::SocketCommunicator scomm(io);  // A communicator object that handles communication via sockets
+    IPCC::SocketCommunicator scomm(io, opts.getIPCPort());  // A communicator object that handles communication via sockets
     IPCC::IPC ipc = IPCC::IPC(scomm);  // The actual IPC object that handles all the top level communication
     if(opts.getUseIPC()) {
         ipc.connect();

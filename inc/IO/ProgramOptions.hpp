@@ -104,6 +104,9 @@ public:
 
     inline auto getUseIPC() const
         { return _use_ipc; }
+
+    inline auto getIPCPort() const
+        { return _ipc_port; }
 public:
     inline auto getGridSize() const
         { return meshsize; }
@@ -259,6 +262,7 @@ private: // program parameters
     std::string _wakefile;
 
     bool _use_ipc;
+    int _ipc_port;
 
 private: // simulation parameters
     uint32_t meshsize;

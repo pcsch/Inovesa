@@ -150,9 +150,15 @@ vfps::ProgramOptions::ProgramOptions() :
         #else // not INOVESA_USE_OPENCL
             "(not active in this build)")
         #endif // INOVESA_USE_OPENCL
-            ("useipc", po::value<bool>(&_use_ipc)->default_value(false)->implicit_value(true),
+            ("UseIpc", po::value<bool>(&_use_ipc)->default_value(false)->implicit_value(true),
         #ifdef INOVESA_USE_IPC
             "Use Inter Process Communication to attach to a controlling process")
+        #else
+            "(not active in this build)")
+        #endif // INOVESA_USE_IPC
+            ("IpcPort", po::value<int>(&_ipc_port)->default_value(6513),
+        #ifdef INOVESA_USE_IPC
+            "Por to use for Inter Process Communication")
         #else
             "(not active in this build)")
         #endif // INOVESA_USE_IPC

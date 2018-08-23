@@ -15,13 +15,13 @@ namespace IPCC {
 
     class SocketCommunicator : public BaseCommunicator {
     public:
-        explicit SocketCommunicator(boost::asio::io_service &io_context) : io_context(&io_context) {
-            acceptor = new tcp::acceptor(io_context, tcp::endpoint(tcp::v4(), 6513));
+        explicit SocketCommunicator(boost::asio::io_service &io_context, int port) : io_context(&io_context), port(port) {
+            acceptor = new tcp::acceptor(io_context, tcp::endpoint(tcp::v4(), port));
             socket = new tcp::socket(io_context);
         }
 
         bool init() override {
-            std::cout << "Waiting for Connection " << std::flush;
+            std::cout << "Waiting for Connection on port " << port << std::flush;
             acceptor->accept(*socket);
             return true;
         }
@@ -63,6 +63,7 @@ namespace IPCC {
         boost::asio::io_service *io_context;
         tcp::acceptor *acceptor;
         tcp::socket *socket;
+        int port;
     };
 }
 
