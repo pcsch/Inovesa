@@ -317,21 +317,21 @@ int main(int argc, char** argv)
         if (verbose && use_csr) {
             sstream.str("");
             sstream << std::fixed << shield;
-            Display::printText("Shielding parameter (g=gap): "
+            Display::printText("Shielding parameter (h=gap): "
                                +sstream.str());
-            if (gap>0) {
-                shield = bl*std::sqrt(R_bend)*std::pow(gap/2,-3./2.);
-            }
+//            if (gap>0) {
+//                shield = bl*std::sqrt(R_bend)*std::pow(gap/2,-3./2.);
+//            }
             sstream.str("");
-            sstream << std::fixed << shield;
-            Display::printText("Shielding parameter (h=height/2): "
+            sstream << std::fixed << shield*std::pow(1/2., -3./2.);
+            Display::printText("Shielding parameter (h=gap/2): "
                                +sstream.str());
             sstream.str("");
             sstream << std::fixed << S_csr;
             if (Ib > Ith) {
-                sstream << " (> " << 0.5+0.12*shield << ')';
+                sstream << " (> " << 0.5+0.34*shield << ')';
             } else {
-                sstream << " (< " << 0.5+0.12*shield << ')';
+                sstream << " (< " << 0.5+0.34*shield << ')';
             }
             Display::printText("CSR strength: "
                                +sstream.str());
